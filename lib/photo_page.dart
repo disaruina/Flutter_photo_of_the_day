@@ -1,6 +1,5 @@
-import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 enum PhotoType { dog, landscapes }
 
@@ -31,20 +30,12 @@ class _PhotoPageState extends State<PhotoPage> {
     });
 
     try {
-      String url;
-      http.Response response;
-
-      if (_animalType == PhotoType.dog) {
-        url = 'https://dog.ceo';
-        response = await http.get(Uri.parse(url));
-        Map<String, dynamic> data = jsonDecode(response.body);
-        _imageUrl = data['message'];
-      } else {
-        final random = DateTime.now().millisecondsSinceEpoch;
-        _imageUrl = 'https://picsum.photos';
-      }
+      await Future.delayed(const Duration(seconds: 2));
+      final random = Random();
+      final randomIndex = random.nextInt(_localPhotos.length);
+      _imageUrl = _localPhotos[randomIndex];
     } catch (e) {
-      _errorMessage = 'Не удалось загрузить фото.\nПроверьте подключение к интернету.';
+      _errorMessage = 'Ошибка загрузки фото';
     }
 
     setState(() {
@@ -78,7 +69,7 @@ class _PhotoPageState extends State<PhotoPage> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         ChoiceChip(
-          label: const Text('� Собаки'),
+          label: const Text('🐶 Собаки'),
           selected: _animalType == PhotoType.dog,
           onSelected: (selected) {
             if (selected) {
@@ -92,7 +83,7 @@ class _PhotoPageState extends State<PhotoPage> {
         ),
         const SizedBox(width: 12),
         ChoiceChip(
-          label: const Text(' Пейзаж'),
+          label: const Text('🌄 Пейзаж'),
           selected: _animalType == PhotoType.landscapes,
           onSelected: (selected) {
             if (selected) {
@@ -139,17 +130,11 @@ class _PhotoPageState extends State<PhotoPage> {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(16),
-            child: _imageUrl!.startsWith('assets/')
-                ? Image.asset(
-                    _imageUrl!,
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                  )
-                : Image.network(
-                    _imageUrl!,
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                  ),
+            child: Image.asset(
+              _imageUrl!,
+              fit: BoxFit.cover,
+              width: double.infinity,
+            ),
           ),
         ),
       );
